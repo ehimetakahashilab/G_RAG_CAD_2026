@@ -14,10 +14,15 @@ __pycache__/
 .venv/
 venv/
 
-# ログ・一時ファイル
+# ログ
 *.log
-tmp/
-temp/
+
+# 直下のMarkdownのみ除外
+/*.md
+
+# ただしREADMEや共有したいMarkdownは例外
+!README.md
+!README_*.md
 
 # OS / エディタ
 .DS_Store

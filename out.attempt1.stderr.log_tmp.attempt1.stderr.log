@@ -1,4 +1,0 @@
-  File "C:\Users\sasap\OneDrive\デスクトップ\今治\pro_merge\chatbot_project\out.py_tmp.py", line 1304
-    bracketPram7.Surfaces1=["PLS","
-                                  ^
-SyntaxError: unterminated string literal (detected at line 1304)
