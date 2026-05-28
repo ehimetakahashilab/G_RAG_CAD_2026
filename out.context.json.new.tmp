@@ -1,0 +1,39 @@
+{
+  "cypher_query": "MATCH (m:Method)\nWHERE toLower(m.name) CONTAINS toLower('bracket')\n   OR toLower(m.description) CONTAINS toLower('bracket')\nMATCH (m)-[:BELONGS_TO]->(o:Object)\nOPTIONAL MATCH (m)-[:HAS_PARAMETER]->(p:Parameter)\nOPTIONAL MATCH (p)-[:HAS_TYPE]->(pt:DataType)\nOPTIONAL MATCH (m)-[:HAS_RETURNS]->(r:ReturnValue)\nOPTIONAL MATCH (r)-[:HAS_TYPE]->(rt:DataType)\nRETURN o.name AS objectName, m.name AS methodName, m.description AS methodDescription, p.order AS parameterOrder, p.name AS parameterName, p.description AS parameterDescription, pt.name AS parameterType, r.description AS returnDescription, rt.name AS returnType\nORDER BY objectName, methodName, parameterOrder",
+  "neo4j_result_count": 3,
+  "neo4j_results": [
+    {
+      "objectName": "Part",
+      "methodName": "CreateBracket",
+      "methodDescription": "船殻のブラケットソリッド要素を作成する",
+      "parameterOrder": 0,
+      "parameterName": "ParamObj",
+      "parameterDescription": "",
+      "parameterType": "ブラケットパラメータオブジェクト",
+      "returnDescription": "作成したソリッド要素のID",
+      "returnType": "要素ID"
+    },
+    {
+      "objectName": "Part",
+      "methodName": "CreateBracket",
+      "methodDescription": "船殻のブラケットソリッド要素を作成する",
+      "parameterOrder": 1,
+      "parameterName": "bUpdate",
+      "parameterDescription": "更新フラグ(未実装、使用しない)",
+      "parameterType": "bool",
+      "returnDescription": "作成したソリッド要素のID",
+      "returnType": "要素ID"
+    },
+    {
+      "objectName": "Part",
+      "methodName": "CreateBracketParam",
+      "methodDescription": "船殻のブラケット要素のパラメータオブジェクトの作成",
+      "parameterOrder": null,
+      "parameterName": null,
+      "parameterDescription": null,
+      "parameterType": null,
+      "returnDescription": "ブラケット要素のパラメータオブジェクト",
+      "returnType": "ブラケット要素のパラメータオブジェクト"
+    }
+  ]
+}

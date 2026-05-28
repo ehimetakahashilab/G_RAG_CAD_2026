@@ -1,0 +1,21 @@
+# --- Core ---
+langchain==0.2.16
+langchain-core==0.2.43
+langchain-community==0.3.4
+langchain-openai==0.2.8
+openai==1. FiftyTwo.0  # ← ピリオドを消して使ってください: 1.52.0
+pydantic>=2.7,<3
+python-dotenv>=1.0,<2
+tqdm>=4.66,<5
+
+# --- Vector / DB ---
+chromadb==0.5.5
+neo4j==5.25.0
+
+# --- Parsing / utils（あなたの環境に合わせて固定） ---
+tree-sitter==0.21.3
+tree-sitter-languages==1.10.2
+
+# --- Nice to have（任意） ---
+numpy>=1.26,<3
+tenacity>=8.2,<9

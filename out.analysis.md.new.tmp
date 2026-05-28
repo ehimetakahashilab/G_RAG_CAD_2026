@@ -1,0 +1,165 @@
+## ブラケット配置分析
+
+### 対象部材とループ変数
+- Deck D 上の縦通材・横通材
+  - `profile1`: `HK.Casing.Deck.D.DL05P`（ProfileType=1002）
+  - `profile4`: `HK.Casing.Deck.D.DL02P`（ProfileType=1201）
+  - `profile5`: `HK.Casing.Deck.D.FR13C`（ProfileType=1003）
+  - `profile6`: `HK.Casing.Deck.D.DL01.FP`（ProfileType=1002）
+  - `profile14`: `HK.Casing.Deck.D.FR13P`（ProfileType=1003）
+  - `profile16`: `HK.Casing.Deck.D.DL03P`（ProfileType=1002）
+  - `profile19`: `HK.Casing.Deck.D.FR09P`（ProfileType=1003）
+  - `profile20`: `HK.Casing.Deck.D.FR09C`（ProfileType=1003）
+  - `profile24`: `HK.Casing.Deck.D.DL04P`（ProfileType=1002）
+  - `profile27`: `HK.Casing.Deck.D.DL01.AP`（ProfileType=1002）
+
+- Fore/Aft 壁材
+  - `profile7`: `HK.Casing.Wall.Fore.DL01.CDP`（ProfileType=1002）
+  - `profile10`: `HK.Casing.Wall.Fore.DL05.CDP`（ProfileType=1002）
+  - `profile11`: `HK.Casing.Wall.Aft.DL02.CDP`（ProfileType=1201）
+  - `profile12`: `HK.Casing.Wall.Fore.DL02.CDP`（ProfileType=1201）
+  - `profile17`: `HK.Casing.Wall.Aft.DL03.CDP`（ProfileType=1002）
+  - `profile18`: `HK.Casing.Wall.Aft.DL05.CDP`（ProfileType=1002）
+  - `profile22`: `HK.Casing.Wall.Fore.DL03.CDP`（ProfileType=1002）
+  - `profile25`: `HK.Casing.Wall.Aft.DL04.CDP`（ProfileType=1002）
+  - `profile26`: `HK.Casing.Wall.Fore.DL04.CDP`（ProfileType=1002）
+  - `profile28`: `HK.Casing.Wall.Aft.DL01.CDP`（ProfileType=1002）
+
+- Side 壁材
+  - `profile2`: `HK.Casing.Wall.Side.FR12.CDP`
+  - `profile3`: `HK.Casing.Wall.Side.FR08.CDP`
+  - `profile8`: `HK.Casing.Wall.Side.FR07.CDP`
+  - `profile9`: `HK.Casing.Wall.Side.FR11.CDP`
+  - `profile13`: `HK.Casing.Wall.Side.FR10.CDP`
+  - `profile15`: `HK.Casing.Wall.Side.FR13.CDP`
+  - `profile21`: `HK.Casing.Wall.Side.FR09.CDP`
+  - `profile23`: `HK.Casing.Wall.Side.FR15.CDP`
+  - `profile29`: `HK.Casing.Wall.Side.FR14.CDP`
+
+- 板・ソリッド参照
+  - Deck D 板: `extrude_sheet3`、対応ソリッド `solid1`
+  - Fore 壁板: `extrude_sheet1`、対応ソリッド `solid3`
+  - Aft 壁板: `extrude_sheet2`、対応ソリッド `solid2`
+  - Side P 壁板: `extrude_sheet5`、対応ソリッド `solid4`
+  - Deck C 板: `extrude_sheet4`
+
+### ブラケット配置リスト
+今回の編集指示は「1か所分のブラケットを追加」です。  
+元スクリプト全体を確認すると、最も自然で単独追加しやすく、かつ方向整合が明確な候補は **Fore 壁 DL01 と Deck D の DL01.FP の取り合い** です。
+
+| # | Surfaces1 | Surfaces2 | BracketType | BaseElement | Sf1EndElements | 備考 |
+|---|-----------|-----------|-------------|-------------|----------------|------|
+| 1 | `["PLS","False","False","-1","0","0",solid3]` | `[profile7[0]+",FL"]` | `1505` | `profile7[0]` | `["PLS","False","False","-1","0","0",profile10[0]]` | Fore壁 `profile7` の End1 は `profile6[0]`（Deck D DL01.FP）へ接続。壁板×山形鋼端部のため 1505。Surfaces1 は Fore壁板。Sf1EndElements は同一 Fore壁板上の別プロファイルとして `profile10[0]` を採用 |
+
+#### 選定理由
+- `profile7 = HK.Casing.Wall.Fore.DL01.CDP`
+  - AttachSurface: `extrude_sheet1`（Fore壁）
+  - End1: `profile6[0] = HK.Casing.Deck.D.DL01.FP`
+  - End2: `extrude_sheet4`（Deck C）
+- Fore/Aft整合ルール上、
+  - `Wall.Fore.DL01.*` は `Deck.*.DL01.F / FP` と接続可
+  - 実際に `profile7` は `profile6`（`DL01.FP`）に接続しており整合
+- 1505 の典型パターン
+  - 板（PLS）× Profile（FL）
+  - BaseElement は `profile7[0]`
+  - Surfaces1 は Fore壁板、Surfaces2 は `profile7[0]+",FL"` で構成可能
+- `solid3` が `extrude_sheet1` の厚み付けソリッドとして後半で定義済みであり、仕様上こちらを優先使用するのが適切
+
+### ループ構造方針
+- 今回は「1か所分」の追加なので、ループ化は不要。
+- 単一のブラケットパラメータオブジェクトを作成し、以下の順で定義する方針が適切。
+  1. 参照元となる板・プロファイル・ソリッドがすべて生成済みであることを確認
+  2. `CreateBracketParam()` でブラケットパラメータを生成
+  3. `BaseElement = profile7[0]`
+  4. `Surfaces1 = ["PLS","False","False","-1","0","0",solid3]`
+  5. `Surfaces2 = [profile7[0]+",FL"]`
+  6. `Sf1EndElements = ["PLS","False","False","-1","0","0",profile10[0]]`
+  7. 寸法・板厚・スカラップ等を設定
+  8. `CreateBracket(..., False)` で生成
+
+- 配置位置は、少なくとも以下が定義済みになった後が望ましい。
+  - `profile7`
+  - `profile10`
+  - `solid3`
+
+### パラメータ依存関係
+- **BracketType**
+  - 今回は `1505`
+  - 理由: Fore壁板（PLS）に取り付く `profile7` の端部ブラケット
+
+- **BaseElement**
+  - 必ず `profile7[0]`
+  - solid や sheet ではなくプロファイル本体を使う
+
+- **Surfaces1**
+  - PLS 面指定
+  - Fore壁板の `SheetAlignNormal(extrude_sheet1,1,0,0)` の符号反転値を使うため  
+    `(-1,0,0)` を採用
+  - 参照先は sheet より `solid3` を優先
+
+- **Surfaces2**
+  - `profile7[0]+",FL"`
+  - 山形鋼・T形鋼端部ブラケットの相手面は FL 指定が標準
+
+- **Sf1EndElements**
+  - 1505 では必須
+  - Fore壁板上の別プロファイルを指定する必要がある
+  - 同一板上の候補:
+    - `profile10[0]` = Fore.DL05.CDP
+    - `profile12[0]` = Fore.DL02.CDP
+    - `profile22[0]` = Fore.DL03.CDP
+    - `profile26[0]` = Fore.DL04.CDP
+  - この中から最も安定な代用として `profile10[0]` を採用
+  - 法線値は Surfaces1 と同じく `(-1,0,0)` を用いるのが自然
+
+- **Thickness**
+  - `profile7` は ProfileType=1002
+  - `ProfileParams=["125","75","7","10","5"]`
+  - 仕様により山形鋼は `ProfileParams[2]` を使用
+  - よって `Thickness = "7"`
+
+- **Mold**
+  - `profile7.Mold = "+"`
+  - ブラケットも同じ `+`
+
+- **MaterialName**
+  - `"SS400"`
+
+- **DefinitionType**
+  - `1`
+
+- **寸法パラメータ**
+  - 1505 の標準値を適用
+  - `BracketParams = ["200"]`
+  - `Sf1DimensionType = 1541`
+  - `Sf1DimensonParams = ["0","100"]`
+  - `Sf2DimensionType = 1531`
+  - `Sf2DimensonParams = ["200","15"]`
+  - `Scallop1Type = 1801`
+  - `Scallop1Params = ["0"]`
+  - `Scallop2Type = 0`
+
+- **反転系フラグ**
+  - `UseSideSheetForPlane = False`
+  - `RevSf1 = False`
+  - `RevSf2 = False`
+  - `RevSf3 = False`
+
+- **End1/End2 指定の必要性**
+  - ブラケット作成自体に `AddEnd1Elements` / `AddEnd2Elements` のような profile 作成時の指定は不要
+  - ただし 1505 では `Sf1EndElements` が必須
+  - これを省略すると COM 例外の可能性が高い
+
+### 注意事項
+- Fore/Aft方向整合は必須。
+  - 今回の対象は `Wall.Fore.DL01.CDP` × `Deck.D.DL01.FP`
+  - Fore × FP なので適合
+- `profile28 = Wall.Aft.DL01.CDP` と `profile6 = Deck.D.DL01.FP` のような Aft × Fore 系の誤組合せは不可
+- ミラーコピーされた `mirror_copied1[0]` はオリジナル側のみブラケット作成の方針から、今回の候補には使わない
+- ブラケットコードを入れる位置は、最低限 `solid3`, `profile7`, `profile10` の生成後
+- `part.CreateBracket(bracketParam, False)` の第2引数は必ず `False`
+- `part.BlankElement(bracketX, True)` は仕様上使わない
+- `solid3` は Fore壁 `extrude_sheet1` の厚み付けソリッドであり、PLS参照先として `extrude_sheet1` より優先
+- `profile7` の End1 相手は `profile6` だが、1505 の `Sf1EndElements` は接続相手そのものではなく、**Surfaces1 側の板上にある別プロファイル** を使う必要がある点に注意
+- 今回は 1か所のみの追加なので、他の候補（DL03, DL04, DL05, Side FR 系）は対象外とするのが最も安全
+- Side FR 系（`profile2`, `profile3`, `profile8`, `profile9`, `profile13`, `profile23`, `profile29` など）も候補になり得るが、単独追加としては Fore/Aft DL 系の方が End 接続関係が明瞭で、誤接続リスクが低い

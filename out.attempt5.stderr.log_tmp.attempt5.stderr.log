@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "C:\Users\sasap\OneDrive\デスクトップ\今治\pro_merge\chatbot_project\out.attempt4.py_tmp.attempt4.py", line 1161, in <module>
+    bracket1 = part.CreateBracket(bracketPram1,False)
+  File "<COMObject GetPart>", line 3, in CreateBracket
+pywintypes.com_error: (-2147352567, '例外が発生しました。', (0, None, None, None, 0, -2147467259), None)

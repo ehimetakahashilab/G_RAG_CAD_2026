@@ -1,0 +1,11 @@
+data/
+.env
+__pycache__/
+chroma/
+*.json
+*.md
+*.xml
+data_copy/
+script/
+config.py
+ide.doc.parser.py
